@@ -2,192 +2,229 @@ import { useEffect } from 'react'
 import './App.css'
 import { canvas, ctx } from './canvas'
 
-const mapWidth = 20
-const mapHeight = 10
+const widthMap = 10
+const heightMap = 10
+
+const { abs, cos, floor, min, PI, sin, random } = Math
+
+const rads = (degs: number) => (degs * Math.PI) / 180
+
+const degs = (rads: number) => (rads * 180) / Math.PI
 
 export const App = () => {
   const createMap = () => {
-    const fullWidth = window.innerWidth * 2
-    const fullHeight = window.innerHeight * 2
+    const widthScreen = window.innerWidth * 2
+    const heightScreen = window.innerHeight * 2
 
-    const margin = 50
+    const marginHorizontal = min(widthScreen, heightScreen) * 0.05
+    const marginVertical = min(widthScreen, heightScreen) * 0.05
 
-    const width = fullWidth - margin * 2
-    const height = fullHeight - margin * 2
+    const widthUsable = widthScreen - marginHorizontal * 2
+    const heightUsable = heightScreen - marginVertical * 2
 
-    const unit =
-      width / (Math.floor(mapWidth / 2) * 3 + 0.5 + (mapWidth % 2) * 2)
-    const rowHeight = Math.abs(Math.cos(60) * unit)
+    const ratioWidthHeight = abs(sin(PI / 3))
+    const ratioHeightWidth = 1 / ratioWidthHeight
+
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)'
+    ctx.strokeRect(marginHorizontal, marginVertical, widthUsable, heightUsable)
+
+    const dynamicHorizontalUnits =
+      floor(widthMap / 2) * 3 +
+      (widthMap % 2 === 0 ? 0 : 2) + // Add 2 if widthMap is odd
+      (widthMap % 2 === 0 ? 0.5 : 0) // Add 0.5 if widthMap is even
+    const sizeDynamicHorizontalUnits = widthUsable / dynamicHorizontalUnits
+
+    const dynamicVerticalUnits = heightMap * 2 + (widthMap > 1 ? 1 : 0)
+    const sizeDynamicVerticalUnits =
+      (heightUsable / dynamicVerticalUnits) * ratioHeightWidth
+
+    const unit = min(sizeDynamicHorizontalUnits, sizeDynamicVerticalUnits)
+
+    const heightRow = ratioWidthHeight * unit
+
+    const widthMapRender = unit * dynamicHorizontalUnits
+    const heightMapRender = heightRow * dynamicVerticalUnits
+
+    const offsetHorizontal = (widthUsable - widthMapRender) / 2
+    const offsetVertical = (heightUsable - heightMapRender) / 2
+
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)'
+
+    for (let x = 0; x < widthMap; x++) {
+      ctx.beginPath()
+      ctx.moveTo(
+        marginHorizontal +
+          offsetHorizontal +
+          unit * (floor(x / 2) * 3 + 1 + (x % 2) * 1.5),
+        0
+      )
+      ctx.lineTo(
+        marginHorizontal +
+          offsetHorizontal +
+          unit * (floor(x / 2) * 3 + 1 + (x % 2) * 1.5),
+        heightScreen
+      )
+      ctx.stroke()
+      ctx.closePath()
+    }
+
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)'
+
+    for (let y = 0; y < heightMap * 2; y++) {
+      ctx.beginPath()
+      ctx.moveTo(0, marginVertical + offsetVertical + heightRow * (y + 1))
+      ctx.lineTo(
+        widthScreen,
+        marginVertical + offsetVertical + heightRow * (y + 1)
+      )
+      ctx.stroke()
+      ctx.closePath()
+    }
 
     type Point = {
       x: number
       y: number
     }
 
-    const generateMatrix = (): Point[][] => {
-      let points: Point[][] = []
+    type KeyPoint = Point & {
+      radialPoints: Point[]
+    }
 
-      const numRows = mapHeight * 2 + 2
-      // const numCols = (Math.floor(mapWidth / 2) * 3 + (mapWidth % 2) * 2)
+    const generateMatrix = (
+      widthMap: number,
+      heightMap: number,
+      unit: number,
+      heightRow: number,
+      marginHorizontal: number,
+      marginVertical: number
+    ): KeyPoint[][] => {
+      let points: KeyPoint[][] = []
+      const { floor: f } = Math
 
-      for (let y = 0; y < numRows; y++) {
-        points[y] = []
+      for (let y = 0; y < heightMap; y++) {
+        let row: KeyPoint[] = []
 
-        // First row
-        if (y === 0) {
-          for (let x = 0; x < mapWidth; x++) {
-            let point = {
-              y: margin,
-              x: (Math.floor(x / 2) * 3 + 0.5 + (x % 2)) * unit + margin
-            }
-            points[y].push(point)
+        for (let x = 0; x < widthMap; x++) {
+          const px =
+            marginHorizontal +
+            offsetHorizontal +
+            (floor(x / 2) * 3 + 1 + (x % 2) * 1.5) * unit
+          const py =
+            marginVertical + offsetVertical + (2 * y + 1 + (x % 2)) * heightRow
+
+          let radialPoints: Point[] = []
+
+          for (let d = 0; d < 360; d = d += 60) {
+            let rad = rads(d)
+
+            const rpx = cos(rad)
+            const rpy = sin(rad)
+
+            radialPoints.push({
+              x: rpx,
+              y: rpy
+            })
           }
-          continue
-        }
 
-        // Final row
-        if (y === numRows - 1) {
-          for (let x = 0; x < mapWidth; x++) {
-            let point = {
-              y: margin + rowHeight * (numRows - 1),
-              x: (Math.floor(x / 2) * 3 + 2 + (x % 2)) * unit + margin
-            }
-            points[y].push(point)
+          const p = {
+            x: px,
+            y: py,
+            radialPoints: radialPoints
           }
-          continue
-        }
 
-        // Odd rows (y =  1, 3, etc.)
-        if (y % 2 === 1) {
-          for (let x = 0; x <= mapWidth; x++) {
-            let point = {
-              y: margin + rowHeight * y,
-              x: (Math.floor(x / 2) * 3 + (x % 2) * 2) * unit + margin
-            }
-            points[y].push(point)
-          }
+          row.push(p)
         }
-
-        // Even rows (y = 2, 4, etc.)
-        if (y % 2 === 0) {
-          for (let x = 0; x <= mapWidth; x++) {
-            let point = {
-              y: margin + rowHeight * y,
-              x: (Math.floor(x / 2) * 3 + 0.5 + (x % 2)) * unit + margin
-            }
-            points[y].push(point)
-          }
-        }
+        points.push(row)
       }
 
       return points
     }
 
-    const matrix: Point[][] = generateMatrix()
+    const matrix: KeyPoint[][] = generateMatrix(
+      widthMap,
+      heightMap,
+      unit,
+      heightRow,
+      marginHorizontal,
+      marginVertical
+    )
 
-    matrix.forEach((row, i) => {
-      row.forEach((p, j) => {
-        // ctx.beginPath()
-        // ctx.arc(p.x, p.y, 8, 0, 2 * Math.PI)
-        // ctx.fillStyle = 'white'
-        // ctx.fill()
-        // ctx.closePath()
+    matrix.forEach((row) => {
+      // const radius = unit * 0.9
+      const radius = heightRow
 
-        ctx.strokeStyle = 'white'
-        ctx.lineWidth = 1
+      row.forEach((p) => {
+        ctx.beginPath()
+        ctx.arc(p.x, p.y, 2, 0, 2 * Math.PI)
+        ctx.fillStyle = 'rgba(255, 255, 255, 1)'
+        ctx.fill()
+        ctx.closePath()
 
-        // Other rows
-        if (i % 2 === 0) {
-          if (j % 2 === 0) {
-            if (j < matrix[i].length - 1) {
-              ctx.beginPath()
-              ctx.moveTo(p.x, p.y)
-              ctx.lineTo(matrix[i][j + 1].x, matrix[i][j + 1].y)
-              ctx.stroke()
-              ctx.closePath()
-            }
+        ctx.beginPath()
+        ctx.arc(p.x, p.y, 10, 0, 2 * Math.PI)
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)'
+        ctx.stroke()
+        ctx.closePath()
 
-            // All rows except the second to last row
-            if (i < matrix.length - 2) {
-              ctx.beginPath()
-              ctx.moveTo(p.x, p.y)
-              ctx.lineTo(matrix[i + 1][j].x, matrix[i + 1][j].y)
-              ctx.stroke()
-              ctx.closePath()
-            }
+        ctx.beginPath()
+        ctx.arc(p.x, p.y, heightRow, 0, Math.PI * 2)
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)'
+        ctx.stroke()
+        ctx.closePath()
 
-            // Second to last row
-            if (i === matrix.length - 2 && j !== 0) {
-              ctx.beginPath()
-              ctx.moveTo(p.x, p.y)
-              ctx.lineTo(matrix[i + 1][j - 1].x, matrix[i + 1][j - 1].y)
-              ctx.stroke()
-              ctx.closePath()
-            }
-          }
+        ctx.beginPath()
+        ctx.arc(p.x, p.y, unit, 0, Math.PI * 2)
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)'
+        ctx.stroke()
+        ctx.closePath()
 
-          if (j % 2 === 1) {
-            // All rows except the second to last row
-            if (i < matrix.length - 2) {
-              ctx.beginPath()
-              ctx.moveTo(p.x, p.y)
-              ctx.lineTo(matrix[i + 1][j].x, matrix[i + 1][j].y)
-              ctx.stroke()
-              ctx.closePath()
-            }
+        // First hex at size unit
+        ctx.save()
+        ctx.translate(p.x, p.y)
+        ctx.beginPath()
+        ctx.moveTo(p.radialPoints[5].x * unit, p.radialPoints[5].y * unit)
+        p.radialPoints.forEach((rp) => {
+          ctx.lineTo(rp.x * unit, rp.y * unit)
+        })
+        // ctx.strokeStyle = 'rgba(255, 0, 0, 1)'
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)'
+        ctx.lineWidth = 3
+        ctx.stroke()
+        // ctx.fillStyle = `rgba(255, 0, 0, ${random() * 0.1})`
+        ctx.fillStyle = `rgba(255, 0, 0, 0.05)`
+        ctx.fill()
+        ctx.closePath()
+        ctx.restore()
 
-            // Second to last row
-            if (i === matrix.length - 2 && j !== 0) {
-              ctx.beginPath()
-              ctx.moveTo(p.x, p.y)
-              ctx.lineTo(matrix[i + 1][j - 1].x, matrix[i + 1][j - 1].y)
-              ctx.stroke()
-              ctx.closePath()
-            }
-          }
-        }
+        // Second hex at size radius
+        ctx.save()
+        ctx.translate(p.x, p.y)
+        ctx.beginPath()
+        ctx.moveTo(p.radialPoints[5].x * radius, p.radialPoints[5].y * radius)
+        p.radialPoints.forEach((rp) => {
+          ctx.lineTo(rp.x * radius, rp.y * radius)
+        })
+        ctx.strokeStyle = 'rgba(255, 0, 0, 0.75)'
+        ctx.lineWidth = 3
+        ctx.stroke()
+        ctx.fillStyle = `rgba(255, 0, 0, ${random() * 0.25})`
+        ctx.fill()
+        ctx.closePath()
+        ctx.restore()
 
-        if (i % 2 === 1) {
-          if (j % 2 === 0) {
-            // All rows except the second to last row
-            if (i < matrix.length - 2) {
-              ctx.beginPath()
-              ctx.moveTo(p.x, p.y)
-              ctx.lineTo(matrix[i + 1][j].x, matrix[i + 1][j].y)
-              ctx.stroke()
-              ctx.closePath()
-            }
-          }
-
-          if (j % 2 === 1) {
-            // All rows except the last row
-            if (i < matrix.length - 1) {
-              ctx.beginPath()
-              ctx.moveTo(p.x, p.y)
-              ctx.lineTo(matrix[i][j + 1].x, matrix[i][j + 1].y)
-              ctx.stroke()
-              ctx.closePath()
-            }
-
-            // The last row
-            if (i === matrix.length - 1) {
-              ctx.beginPath()
-              ctx.moveTo(p.x, p.y)
-              ctx.lineTo(matrix[i][j - 1].x, matrix[i][j - 1].y)
-              ctx.stroke()
-              ctx.closePath()
-            }
-
-            // All rows except the last row
-            if (i < matrix.length - 1) {
-              ctx.beginPath()
-              ctx.moveTo(p.x, p.y)
-              ctx.lineTo(matrix[i + 1][j].x, matrix[i + 1][j].y)
-              ctx.stroke()
-              ctx.closePath()
-            }
-          }
-        }
+        // Hex spokes
+        ctx.save()
+        ctx.translate(p.x, p.y)
+        ctx.beginPath()
+        p.radialPoints.forEach((rp) => {
+          ctx.moveTo(rp.x * unit, rp.y * unit)
+          ctx.lineTo(rp.x * radius, rp.y * radius)
+        })
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)'
+        ctx.lineWidth = 3
+        ctx.stroke()
+        ctx.restore()
+        ctx.closePath()
       })
     })
   }
@@ -195,11 +232,11 @@ export const App = () => {
   const resizeCanvas = () => {
     canvas.width = window.innerWidth * 2
     canvas.height = window.innerHeight * 2
+    createMap()
   }
 
   const initialize = () => {
     resizeCanvas()
-    createMap()
     window.addEventListener('resize', resizeCanvas)
   }
 
