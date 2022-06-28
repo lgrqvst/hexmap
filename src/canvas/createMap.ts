@@ -25,16 +25,16 @@ export const createMap = (widthMap: number, heightMap: number) => {
     (widthMap % 2 === 0 ? 0.5 : 0) // Add 0.5 if widthMap is even
   const sizeDynamicHorizontalUnits = widthUsable / dynamicHorizontalUnits
 
-  const dynamicVerticalUnits = heightMap * 2 + (widthMap > 1 ? 1 : 0)
+  const dynamicVerticalRows = heightMap * 2 + (widthMap > 1 ? 1 : 0)
   const sizeDynamicVerticalUnits =
-    (heightUsable / dynamicVerticalUnits) * ratioHeightWidth
+    (heightUsable / dynamicVerticalRows) * ratioHeightWidth
 
   const unit = min(sizeDynamicHorizontalUnits, sizeDynamicVerticalUnits)
 
   const heightRow = ratioWidthHeight * unit
 
   const widthMapRender = unit * dynamicHorizontalUnits
-  const heightMapRender = heightRow * dynamicVerticalUnits
+  const heightMapRender = heightRow * dynamicVerticalRows
 
   const offsetHorizontal = (widthUsable - widthMapRender) / 2
   const offsetVertical = (heightUsable - heightMapRender) / 2
