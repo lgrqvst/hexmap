@@ -1,8 +1,7 @@
 import { useEffect } from 'react'
 import './App.css'
 
-import { canvas } from './canvas'
-import { createMap } from './canvas/createMap'
+import { canvas, createMap } from './canvas'
 
 const widthMap = 5
 const heightMap = 3

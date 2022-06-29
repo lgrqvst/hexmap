@@ -1,5 +1,5 @@
-import { ctx } from '../canvas'
 import { KeyPoint } from '../types'
+import { ctx } from './'
 import { drawGrid } from './drawGrid'
 import { drawGuides } from './drawGuides'
 import { generateMatrix } from './generateMatrix'
