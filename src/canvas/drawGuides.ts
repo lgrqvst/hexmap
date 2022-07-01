@@ -3,8 +3,16 @@ import { State } from '../reducer'
 const { floor } = Math
 
 export const drawGuides = (ctx: CanvasRenderingContext2D, state: State) => {
-  const { mapSize, screenSize, margins, usableSize, offsets, unit, rowHeight } =
-    state
+  const {
+    mapSize,
+    screenSize,
+    margins,
+    usableSize,
+    renderSize,
+    offsets,
+    unit,
+    rowHeight
+  } = state
 
   ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)'
   ctx.strokeRect(
@@ -46,4 +54,36 @@ export const drawGuides = (ctx: CanvasRenderingContext2D, state: State) => {
     ctx.stroke()
     ctx.closePath()
   }
+
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)'
+
+  ctx.beginPath()
+  ctx.moveTo(0, margins.vertical + offsets.vertical)
+  ctx.lineTo(screenSize.width, margins.vertical + offsets.vertical)
+  ctx.stroke()
+  ctx.closePath()
+
+  ctx.beginPath()
+  ctx.moveTo(0, margins.vertical + offsets.vertical + renderSize.height)
+  ctx.lineTo(
+    screenSize.width,
+    margins.vertical + offsets.vertical + renderSize.height
+  )
+  ctx.stroke()
+  ctx.closePath()
+
+  ctx.beginPath()
+  ctx.moveTo(margins.horizontal + offsets.horizontal, 0)
+  ctx.lineTo(margins.horizontal + offsets.horizontal, screenSize.height)
+  ctx.stroke()
+  ctx.closePath()
+
+  ctx.beginPath()
+  ctx.moveTo(margins.horizontal + offsets.horizontal + renderSize.width, 0)
+  ctx.lineTo(
+    margins.horizontal + offsets.horizontal + renderSize.width,
+    screenSize.height
+  )
+  ctx.stroke()
+  ctx.closePath()
 }
