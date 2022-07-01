@@ -1,31 +1,37 @@
+import { Axes, Dimensions } from '../reducer'
 import { KeyPoint, Point } from '../types'
 import { rads } from '../utils'
 
 const { floor, cos, sin } = Math
 
-export const generateMatrix = (
-  widthMap: number,
-  heightMap: number,
-  unit: number,
-  heightRow: number,
-  marginHorizontal: number,
-  marginVertical: number,
-  offsetHorizontal: number,
-  offsetVertical: number
-): KeyPoint[][] => {
+type Args = {
+  mapSize: Dimensions
+  unit: number
+  rowHeight: number
+  margins: Axes
+  offsets: Axes
+}
+
+export const generateMatrix = ({
+  mapSize,
+  margins,
+  offsets,
+  unit,
+  rowHeight
+}: Args): KeyPoint[][] => {
   let points: KeyPoint[][] = []
   const { floor: f } = Math
 
-  for (let y = 0; y < heightMap; y++) {
+  for (let y = 0; y < mapSize.height; y++) {
     let row: KeyPoint[] = []
 
-    for (let x = 0; x < widthMap; x++) {
+    for (let x = 0; x < mapSize.width; x++) {
       const px =
-        marginHorizontal +
-        offsetHorizontal +
+        margins.horizontal +
+        offsets.horizontal +
         (floor(x / 2) * 3 + 1 + (x % 2) * 1.5) * unit
       const py =
-        marginVertical + offsetVertical + (2 * y + 1 + (x % 2)) * heightRow
+        margins.vertical + offsets.vertical + (2 * y + 1 + (x % 2)) * rowHeight
 
       let radialPoints: Point[] = []
 

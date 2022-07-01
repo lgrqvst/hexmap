@@ -1,16 +1,16 @@
-import { useEffect } from 'react'
+import { useEffect, useReducer } from 'react'
 import './App.css'
 
-import { canvas, createMap } from './canvas'
-
-const widthMap = 5
-const heightMap = 3
+import { canvas, clearCanvas, createMap } from './canvas'
+import { getInitialState, reducer, updateScreenSize } from './reducer'
 
 export const App = () => {
+  const [state, dispatch] = useReducer(reducer, getInitialState())
+
   const resizeCanvas = () => {
+    dispatch(updateScreenSize())
     canvas.width = window.innerWidth * 2
     canvas.height = window.innerHeight * 2
-    createMap(widthMap, heightMap)
   }
 
   const initialize = () => {
@@ -27,6 +27,12 @@ export const App = () => {
 
     return deinitialize
   }, [])
+
+  useEffect(() => {
+    createMap(state)
+
+    return () => clearCanvas()
+  }, [state])
 
   return <div />
 }

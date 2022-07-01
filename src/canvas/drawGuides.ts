@@ -1,38 +1,34 @@
+import { State } from '../reducer'
+
 const { floor } = Math
 
-export const drawGuides = (
-  ctx: CanvasRenderingContext2D,
-  marginHorizontal: number,
-  marginVertical: number,
-  widthUsable: number,
-  heightUsable: number,
-  widthMap: number,
-  heightMap: number,
-  widthScreen: number,
-  heightScreen: number,
-  offsetHorizontal: number,
-  offsetVertical: number,
-  heightRow: number,
-  unit: number
-) => {
+export const drawGuides = (ctx: CanvasRenderingContext2D, state: State) => {
+  const { mapSize, screenSize, margins, usableSize, offsets, unit, rowHeight } =
+    state
+
   ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)'
-  ctx.strokeRect(marginHorizontal, marginVertical, widthUsable, heightUsable)
+  ctx.strokeRect(
+    margins.horizontal,
+    margins.vertical,
+    usableSize.width,
+    usableSize.height
+  )
 
   ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)'
 
-  for (let x = 0; x < widthMap; x++) {
+  for (let x = 0; x < mapSize.width; x++) {
     ctx.beginPath()
     ctx.moveTo(
-      marginHorizontal +
-        offsetHorizontal +
+      margins.horizontal +
+        offsets.horizontal +
         unit * (floor(x / 2) * 3 + 1 + (x % 2) * 1.5),
       0
     )
     ctx.lineTo(
-      marginHorizontal +
-        offsetHorizontal +
+      margins.horizontal +
+        offsets.horizontal +
         unit * (floor(x / 2) * 3 + 1 + (x % 2) * 1.5),
-      heightScreen
+      screenSize.height
     )
     ctx.stroke()
     ctx.closePath()
@@ -40,12 +36,12 @@ export const drawGuides = (
 
   ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)'
 
-  for (let y = 0; y < heightMap * 2; y++) {
+  for (let y = 0; y < mapSize.height * 2; y++) {
     ctx.beginPath()
-    ctx.moveTo(0, marginVertical + offsetVertical + heightRow * (y + 1))
+    ctx.moveTo(0, margins.vertical + offsets.vertical + rowHeight * (y + 1))
     ctx.lineTo(
-      widthScreen,
-      marginVertical + offsetVertical + heightRow * (y + 1)
+      screenSize.width,
+      margins.vertical + offsets.vertical + rowHeight * (y + 1)
     )
     ctx.stroke()
     ctx.closePath()

@@ -1,70 +1,22 @@
+import { State } from '../reducer'
 import { KeyPoint } from '../types'
 import { ctx } from './'
 import { drawGrid } from './drawGrid'
 import { drawGuides } from './drawGuides'
 import { generateMatrix } from './generateMatrix'
 
-const { abs, floor, min, PI, sin } = Math
+export const createMap = (state: State) => {
+  const { mapSize, margins, offsets, unit, rowHeight } = state
 
-export const createMap = (widthMap: number, heightMap: number) => {
-  const widthScreen = window.innerWidth * 2
-  const heightScreen = window.innerHeight * 2
+  drawGuides(ctx, state)
 
-  const marginHorizontal = min(widthScreen, heightScreen) * 0.05
-  const marginVertical = min(widthScreen, heightScreen) * 0.05
-
-  const widthUsable = widthScreen - marginHorizontal * 2
-  const heightUsable = heightScreen - marginVertical * 2
-
-  const ratioWidthHeight = abs(sin(PI / 3))
-  const ratioHeightWidth = 1 / ratioWidthHeight
-
-  const dynamicHorizontalUnits =
-    floor(widthMap / 2) * 3 +
-    (widthMap % 2 === 0 ? 0 : 2) + // Add 2 if widthMap is odd
-    (widthMap % 2 === 0 ? 0.5 : 0) // Add 0.5 if widthMap is even
-  const sizeDynamicHorizontalUnits = widthUsable / dynamicHorizontalUnits
-
-  const dynamicVerticalRows = heightMap * 2 + (widthMap > 1 ? 1 : 0)
-  const sizeDynamicVerticalUnits =
-    (heightUsable / dynamicVerticalRows) * ratioHeightWidth
-
-  const unit = min(sizeDynamicHorizontalUnits, sizeDynamicVerticalUnits)
-
-  const heightRow = ratioWidthHeight * unit
-
-  const widthMapRender = unit * dynamicHorizontalUnits
-  const heightMapRender = heightRow * dynamicVerticalRows
-
-  const offsetHorizontal = (widthUsable - widthMapRender) / 2
-  const offsetVertical = (heightUsable - heightMapRender) / 2
-
-  drawGuides(
-    ctx,
-    marginHorizontal,
-    marginVertical,
-    widthUsable,
-    heightUsable,
-    widthMap,
-    heightMap,
-    widthScreen,
-    heightScreen,
-    offsetHorizontal,
-    offsetVertical,
-    heightRow,
-    unit
-  )
-
-  const matrix: KeyPoint[][] = generateMatrix(
-    widthMap,
-    heightMap,
+  const matrix: KeyPoint[][] = generateMatrix({
+    mapSize,
+    margins,
+    offsets,
     unit,
-    heightRow,
-    marginHorizontal,
-    marginVertical,
-    offsetHorizontal,
-    offsetVertical
-  )
+    rowHeight
+  })
 
-  drawGrid(matrix, ctx, heightRow, unit)
+  drawGrid(matrix, ctx, rowHeight, unit)
 }
