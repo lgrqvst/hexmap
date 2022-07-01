@@ -1,16 +1,16 @@
+import { State } from '../reducer'
 import { KeyPoint } from '../types'
 
 const { random } = Math
 
 export const drawGrid = (
-  matrix: KeyPoint[][],
+  state: State,
   ctx: CanvasRenderingContext2D,
-  heightRow: number,
-  unit: number
+  matrix: KeyPoint[][]
 ) => {
   matrix.forEach((row) => {
-    // const radius = unit * 0.9
-    const radius = heightRow
+    const { unit, radiusFactor } = state
+    const radius = unit * radiusFactor
 
     row.forEach((p) => {
       // // Center dot

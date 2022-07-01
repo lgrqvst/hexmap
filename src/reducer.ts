@@ -22,6 +22,7 @@ export type State = {
   offsets: Axes
   unit: number
   rowHeight: number
+  radiusFactor: number
 }
 
 const getScreenSize = () => {
@@ -61,7 +62,8 @@ const getDynamicVerticalUnitSize = (height: number, rows: number) => {
 const getFullState = (
   screenSize: Dimensions,
   mapSize: Dimensions,
-  margins: Axes
+  margins: Axes,
+  radiusFactor: number
 ): State => {
   const usableSize = getUsableSize(screenSize, margins)
 
@@ -99,14 +101,15 @@ const getFullState = (
     renderSize,
     offsets,
     unit,
-    rowHeight
+    rowHeight,
+    radiusFactor
   }
 }
 
 export const getInitialState = () => {
   const defaultMapSize = {
-    width: 5,
-    height: 3
+    width: 8,
+    height: 5
   }
 
   const defaultMargins = {
@@ -114,9 +117,16 @@ export const getInitialState = () => {
     vertical: 100
   }
 
+  const defaultRadiusFactor = 0.9
+
   const screenSize = getScreenSize()
 
-  const initialState = getFullState(screenSize, defaultMapSize, defaultMargins)
+  const initialState = getFullState(
+    screenSize,
+    defaultMapSize,
+    defaultMargins,
+    defaultRadiusFactor
+  )
 
   return initialState
 }
@@ -141,10 +151,18 @@ export const updateMapSize = (mapSize: Dimensions) => {
   } as const
 }
 
+export const updateRadiusFactor = (radiusFactor: number) => {
+  return {
+    type: 'UPDATE_RADIUS_FACTOR',
+    radiusFactor
+  } as const
+}
+
 type Action =
   | ReturnType<typeof updateScreenSize>
   | ReturnType<typeof updateMargins>
   | ReturnType<typeof updateMapSize>
+  | ReturnType<typeof updateRadiusFactor>
 
 export const reducer = (state: State, action: Action) => {
   switch (action.type) {
@@ -155,13 +173,35 @@ export const reducer = (state: State, action: Action) => {
       )
         return state
 
-      return getFullState(getScreenSize(), state.mapSize, state.margins)
+      return getFullState(
+        getScreenSize(),
+        state.mapSize,
+        state.margins,
+        state.radiusFactor
+      )
       break
     case 'UPDATE_MARGINS':
-      return getFullState(state.screenSize, state.mapSize, action.margins)
+      return getFullState(
+        state.screenSize,
+        state.mapSize,
+        action.margins,
+        state.radiusFactor
+      )
       break
     case 'UPDATE_MAPSIZE':
-      return getFullState(state.screenSize, action.mapSize, state.margins)
+      return getFullState(
+        state.screenSize,
+        action.mapSize,
+        state.margins,
+        state.radiusFactor
+      )
       break
+    case 'UPDATE_RADIUS_FACTOR':
+      return getFullState(
+        state.screenSize,
+        state.mapSize,
+        state.margins,
+        action.radiusFactor
+      )
   }
 }

@@ -6,7 +6,7 @@ import { drawGuides } from './drawGuides'
 import { generateMatrix } from './generateMatrix'
 
 export const createMap = (state: State) => {
-  const { mapSize, margins, offsets, unit, rowHeight } = state
+  const { mapSize, margins, offsets, unit, rowHeight, radiusFactor } = state
 
   drawGuides(ctx, state)
 
@@ -18,5 +18,5 @@ export const createMap = (state: State) => {
     rowHeight
   })
 
-  drawGrid(matrix, ctx, rowHeight, unit)
+  drawGrid(state, ctx, matrix)
 }
