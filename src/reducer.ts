@@ -158,7 +158,7 @@ export const updateRadiusFactor = (radiusFactor: number) => {
   } as const
 }
 
-type Action =
+export type Action =
   | ReturnType<typeof updateScreenSize>
   | ReturnType<typeof updateMargins>
   | ReturnType<typeof updateMapSize>

@@ -4,6 +4,9 @@ import './App.css'
 import { canvas, clearCanvas, createMap } from './canvas'
 import { getInitialState, reducer, updateScreenSize } from './reducer'
 
+import { Header } from './components/Header'
+import { Panel } from './components/Panel'
+
 export const App = () => {
   const [state, dispatch] = useReducer(reducer, getInitialState())
 
@@ -34,5 +37,10 @@ export const App = () => {
     return () => clearCanvas()
   }, [state])
 
-  return <div />
+  return (
+    <>
+      <Header />
+      <Panel state={state} dispatch={dispatch} />
+    </>
+  )
 }
