@@ -10,6 +10,7 @@ type Args = {
   rowHeight: number
   margins: Axes
   offsets: Axes
+  isInverted: boolean
 }
 
 export const generateMatrix = ({
@@ -17,10 +18,10 @@ export const generateMatrix = ({
   margins,
   offsets,
   unit,
-  rowHeight
+  rowHeight,
+  isInverted
 }: Args): KeyPoint[][] => {
   let points: KeyPoint[][] = []
-  const { floor: f } = Math
 
   for (let y = 0; y < mapSize.height; y++) {
     let row: KeyPoint[] = []
@@ -30,8 +31,13 @@ export const generateMatrix = ({
         margins.horizontal +
         offsets.horizontal +
         (floor(x / 2) * 3 + 1 + (x % 2) * 1.5) * unit
-      const py =
-        margins.vertical + offsets.vertical + (2 * y + 1 + (x % 2)) * rowHeight
+      const py = isInverted
+        ? margins.vertical +
+          offsets.vertical +
+          (2 * y + (x % 2 === 0 ? 1 : 0)) * rowHeight
+        : margins.vertical +
+          offsets.vertical +
+          (2 * y + 1 + (x % 2 === 1 ? 1 : 0)) * rowHeight
 
       let radialPoints: Point[] = []
 

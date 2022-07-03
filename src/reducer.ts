@@ -13,7 +13,14 @@ export type Axes = {
   vertical: number
 }
 
+export type MapStyle = 'Sector' | 'Wilderness'
+
+export const isMapStyle = (arg: unknown): arg is MapStyle => {
+  return arg === 'Sector' || arg === 'Wilderness'
+}
+
 export type State = {
+  mapStyle: MapStyle
   mapSize: Dimensions
   screenSize: Dimensions
   margins: Axes
@@ -23,6 +30,7 @@ export type State = {
   unit: number
   rowHeight: number
   radiusFactor: number
+  isInverted: boolean
 }
 
 const getScreenSize = () => {
@@ -60,10 +68,12 @@ const getDynamicVerticalUnitSize = (height: number, rows: number) => {
 }
 
 const getFullState = (
+  mapStyle: MapStyle,
   screenSize: Dimensions,
   mapSize: Dimensions,
   margins: Axes,
-  radiusFactor: number
+  radiusFactor: number,
+  isInverted: boolean
 ): State => {
   const usableSize = getUsableSize(screenSize, margins)
 
@@ -94,6 +104,7 @@ const getFullState = (
   }
 
   return {
+    mapStyle,
     mapSize,
     screenSize,
     margins,
@@ -102,11 +113,14 @@ const getFullState = (
     offsets,
     unit,
     rowHeight,
-    radiusFactor
+    radiusFactor,
+    isInverted
   }
 }
 
 export const getInitialState = () => {
+  const defaultMapStyle = 'Sector'
+
   const defaultMapSize = {
     width: 8,
     height: 5
@@ -119,13 +133,17 @@ export const getInitialState = () => {
 
   const defaultRadiusFactor = 0.9
 
+  const defaultInversion = false
+
   const screenSize = getScreenSize()
 
   const initialState = getFullState(
+    defaultMapStyle,
     screenSize,
     defaultMapSize,
     defaultMargins,
-    defaultRadiusFactor
+    defaultRadiusFactor,
+    defaultInversion
   )
 
   return initialState
@@ -158,11 +176,26 @@ export const updateRadiusFactor = (radiusFactor: number) => {
   } as const
 }
 
+export const setMapStyle = (mapStyle: MapStyle) => {
+  return {
+    type: 'SET_MAP_STYLE',
+    mapStyle
+  } as const
+}
+
+export const toggleInversion = () => {
+  return {
+    type: 'TOGGLE_INVERSION'
+  } as const
+}
+
 export type Action =
   | ReturnType<typeof updateScreenSize>
   | ReturnType<typeof updateMargins>
   | ReturnType<typeof updateMapSize>
   | ReturnType<typeof updateRadiusFactor>
+  | ReturnType<typeof setMapStyle>
+  | ReturnType<typeof toggleInversion>
 
 export const reducer = (state: State, action: Action) => {
   switch (action.type) {
@@ -174,34 +207,60 @@ export const reducer = (state: State, action: Action) => {
         return state
 
       return getFullState(
+        state.mapStyle,
         getScreenSize(),
         state.mapSize,
         state.margins,
-        state.radiusFactor
+        state.radiusFactor,
+        state.isInverted
       )
       break
     case 'UPDATE_MARGINS':
       return getFullState(
+        state.mapStyle,
         state.screenSize,
         state.mapSize,
         action.margins,
-        state.radiusFactor
+        state.radiusFactor,
+        state.isInverted
       )
       break
     case 'UPDATE_MAPSIZE':
       return getFullState(
+        state.mapStyle,
         state.screenSize,
         action.mapSize,
         state.margins,
-        state.radiusFactor
+        state.radiusFactor,
+        state.isInverted
       )
       break
     case 'UPDATE_RADIUS_FACTOR':
       return getFullState(
+        state.mapStyle,
         state.screenSize,
         state.mapSize,
         state.margins,
-        action.radiusFactor
+        action.radiusFactor,
+        state.isInverted
+      )
+    case 'SET_MAP_STYLE':
+      return getFullState(
+        action.mapStyle,
+        state.screenSize,
+        state.mapSize,
+        state.margins,
+        state.radiusFactor,
+        state.isInverted
+      )
+    case 'TOGGLE_INVERSION':
+      return getFullState(
+        state.mapStyle,
+        state.screenSize,
+        state.mapSize,
+        state.margins,
+        state.radiusFactor,
+        !state.isInverted
       )
   }
 }

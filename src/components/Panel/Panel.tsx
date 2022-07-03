@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
-import { Action, State, updateMapSize } from '../../reducer'
+import { Action, State } from '../../reducer'
+import { InversionControl } from './controls/InversionControl'
+import { MapSizeControl } from './controls/MapSizeControl'
+import { MapStyleControl } from './controls/MapStyleControl'
 
 type Props = {
   state: State
@@ -8,25 +11,15 @@ type Props = {
 }
 
 export const Panel = ({ state, dispatch }: Props) => {
-  const [isOpen, setIsOpen] = useState(true)
-  const { mapSize } = state
+  const [isOpen, setIsOpen] = useState(false)
+  const { mapStyle, mapSize, isInverted } = state
 
   const toggle = () => {
     setIsOpen((prev) => !prev)
   }
 
-  const updateMapSizeWidth = (e: React.ChangeEvent<HTMLInputElement>) => {
-    dispatch(updateMapSize({ ...mapSize, width: Number(e.target.value) }))
-  }
-
-  const updateMapSizeHeight = (e: React.ChangeEvent<HTMLInputElement>) => {
-    dispatch(updateMapSize({ ...mapSize, height: Number(e.target.value) }))
-  }
-
   const keydownHandler = (e: KeyboardEvent) => {
-    if (e.code === 'Escape') {
-      toggle()
-    }
+    if (e.code === 'Escape') toggle()
   }
 
   useEffect(() => {
@@ -45,26 +38,9 @@ export const Panel = ({ state, dispatch }: Props) => {
       {isOpen && (
         <PanelStyled>
           <PanelInner>
-            <h2>Style</h2>
-            <ul>
-              <li>Sector</li>
-              <li>Wilderness</li>
-            </ul>
-            <h2>Size</h2>
-            <ul>
-              <li>Width</li>
-              <input
-                type='number'
-                value={mapSize.width}
-                onChange={updateMapSizeWidth}
-              />
-              <li>Height</li>
-              <input
-                type='number'
-                value={mapSize.height}
-                onChange={updateMapSizeHeight}
-              />
-            </ul>
+            <MapStyleControl mapStyle={mapStyle} dispatch={dispatch} />
+            <MapSizeControl mapSize={mapSize} dispatch={dispatch} />
+            <InversionControl isInverted={isInverted} dispatch={dispatch} />
           </PanelInner>
         </PanelStyled>
       )}
