@@ -67,14 +67,19 @@ const getDynamicVerticalUnitSize = (height: number, rows: number) => {
   return (height / rows) * ratioHeightWidth
 }
 
-const getFullState = (
-  mapStyle: MapStyle,
-  screenSize: Dimensions,
-  mapSize: Dimensions,
-  margins: Axes,
-  radiusFactor: number,
+type PartialState = {
+  mapStyle: MapStyle
+  screenSize: Dimensions
+  mapSize: Dimensions
+  margins: Axes
+  radiusFactor: number
   isInverted: boolean
-): State => {
+}
+
+const getFullState = (partialState: PartialState): State => {
+  const { mapStyle, screenSize, mapSize, margins, radiusFactor, isInverted } =
+    partialState
+
   const usableSize = getUsableSize(screenSize, margins)
 
   const dynamicHorizontalUnits = getDynamicHorizontalUnits(mapSize)
@@ -137,14 +142,14 @@ export const getInitialState = () => {
 
   const screenSize = getScreenSize()
 
-  const initialState = getFullState(
-    defaultMapStyle,
+  const initialState = getFullState({
+    mapStyle: defaultMapStyle,
     screenSize,
-    defaultMapSize,
-    defaultMargins,
-    defaultRadiusFactor,
-    defaultInversion
-  )
+    mapSize: defaultMapSize,
+    margins: defaultMargins,
+    radiusFactor: defaultRadiusFactor,
+    isInverted: defaultInversion
+  })
 
   return initialState
 }
@@ -206,61 +211,19 @@ export const reducer = (state: State, action: Action) => {
       )
         return state
 
-      return getFullState(
-        state.mapStyle,
-        getScreenSize(),
-        state.mapSize,
-        state.margins,
-        state.radiusFactor,
-        state.isInverted
-      )
+      return getFullState({ ...state, screenSize: getScreenSize() })
       break
     case 'UPDATE_MARGINS':
-      return getFullState(
-        state.mapStyle,
-        state.screenSize,
-        state.mapSize,
-        action.margins,
-        state.radiusFactor,
-        state.isInverted
-      )
+      return getFullState({ ...state, margins: action.margins })
       break
     case 'UPDATE_MAPSIZE':
-      return getFullState(
-        state.mapStyle,
-        state.screenSize,
-        action.mapSize,
-        state.margins,
-        state.radiusFactor,
-        state.isInverted
-      )
+      return getFullState({ ...state, mapSize: action.mapSize })
       break
     case 'UPDATE_RADIUS_FACTOR':
-      return getFullState(
-        state.mapStyle,
-        state.screenSize,
-        state.mapSize,
-        state.margins,
-        action.radiusFactor,
-        state.isInverted
-      )
+      return getFullState({ ...state, radiusFactor: action.radiusFactor })
     case 'SET_MAP_STYLE':
-      return getFullState(
-        action.mapStyle,
-        state.screenSize,
-        state.mapSize,
-        state.margins,
-        state.radiusFactor,
-        state.isInverted
-      )
+      return getFullState({ ...state, mapStyle: action.mapStyle })
     case 'TOGGLE_INVERSION':
-      return getFullState(
-        state.mapStyle,
-        state.screenSize,
-        state.mapSize,
-        state.margins,
-        state.radiusFactor,
-        !state.isInverted
-      )
+      return getFullState({ ...state, isInverted: !state.isInverted })
   }
 }
