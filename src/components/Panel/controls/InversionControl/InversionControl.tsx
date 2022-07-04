@@ -1,4 +1,3 @@
-import React from 'react'
 import { Action, toggleInversion } from '../../../../reducer'
 
 type Props = {

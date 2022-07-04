@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { Action, State } from '../../reducer'
 import { InversionControl } from './controls/InversionControl'

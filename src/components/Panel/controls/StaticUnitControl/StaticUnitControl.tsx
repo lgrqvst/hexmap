@@ -1,4 +1,3 @@
-import React from 'react'
 import { Action, setStaticUnitSize, useStaticUnits } from '../../../../reducer'
 
 type Props = {
