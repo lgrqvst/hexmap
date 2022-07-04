@@ -4,6 +4,7 @@ import { Action, State } from '../../reducer'
 import { InversionControl } from './controls/InversionControl'
 import { MapSizeControl } from './controls/MapSizeControl'
 import { MapStyleControl } from './controls/MapStyleControl'
+import { StaticUnitControl } from './controls/StaticUnitControl'
 
 type Props = {
   state: State
@@ -12,7 +13,7 @@ type Props = {
 
 export const Panel = ({ state, dispatch }: Props) => {
   const [isOpen, setIsOpen] = useState(false)
-  const { mapStyle, mapSize, isInverted } = state
+  const { mapStyle, mapSize, isInverted, isStaticUnits, staticUnitSize } = state
 
   const toggle = () => {
     setIsOpen((prev) => !prev)
@@ -41,6 +42,11 @@ export const Panel = ({ state, dispatch }: Props) => {
             <MapStyleControl mapStyle={mapStyle} dispatch={dispatch} />
             <MapSizeControl mapSize={mapSize} dispatch={dispatch} />
             <InversionControl isInverted={isInverted} dispatch={dispatch} />
+            <StaticUnitControl
+              isStaticUnits={isStaticUnits}
+              staticUnitSize={staticUnitSize}
+              dispatch={dispatch}
+            />
           </PanelInner>
         </PanelStyled>
       )}
