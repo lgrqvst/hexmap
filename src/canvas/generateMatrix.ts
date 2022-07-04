@@ -34,7 +34,7 @@ export const generateMatrix = ({
       const py = isInverted
         ? margins.vertical +
           offsets.vertical +
-          (2 * y + (x % 2 === 0 ? 1 : 0)) * rowHeight
+          (2 * y + 1 + (x % 2 === 0 ? 1 : 0)) * rowHeight
         : margins.vertical +
           offsets.vertical +
           (2 * y + 1 + (x % 2 === 1 ? 1 : 0)) * rowHeight
